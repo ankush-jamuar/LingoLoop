@@ -20,6 +20,17 @@ from app.schemas.course import (
     LoopMapResponse,
     SkillDetailResponse,
 )
+from app.schemas.lesson_session import (
+    SanitizedExerciseOption,
+    SanitizedExercise,
+    LessonSessionResponse,
+    StartLessonRequest,
+    MatchedPairSubmission,
+    SubmitAnswerRequest,
+    ExerciseValidationResponse,
+    LessonCompletionResponse,
+    LessonAbandonResponse,
+)
 
 __all__ = [
     "HealthResponse",
@@ -41,4 +52,13 @@ __all__ = [
     "UnitMapSection",
     "LoopMapResponse",
     "SkillDetailResponse",
+    "SanitizedExerciseOption",
+    "SanitizedExercise",
+    "LessonSessionResponse",
+    "StartLessonRequest",
+    "MatchedPairSubmission",
+    "SubmitAnswerRequest",
+    "ExerciseValidationResponse",
+    "LessonCompletionResponse",
+    "LessonAbandonResponse",
 ]

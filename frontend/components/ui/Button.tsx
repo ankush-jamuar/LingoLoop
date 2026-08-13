@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "coral" | "violet" | "outline" | "ghost";
+  variant?: "coral" | "violet" | "mint" | "outline" | "ghost";
   size?: "sm" | "md" | "lg";
 }
 
@@ -29,6 +29,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         "bg-coral text-white border-2 border-ink shadow-[0_3px_0_0_#18202A] hover:-translate-y-0.5 active:translate-y-[2px] active:shadow-none hover:bg-coral-hover",
       violet:
         "bg-violet text-white border-2 border-ink shadow-[0_3px_0_0_#18202A] hover:-translate-y-0.5 active:translate-y-[2px] active:shadow-none hover:bg-violet-hover",
+      mint:
+        "bg-mint-dark text-white border-2 border-ink shadow-[0_3px_0_0_#18202A] hover:-translate-y-0.5 active:translate-y-[2px] active:shadow-none hover:brightness-105",
       outline:
         "bg-white text-ink border-2 border-ink shadow-[0_3px_0_0_#18202A] hover:-translate-y-0.5 active:translate-y-[2px] active:shadow-none hover:bg-cream-tint",
       ghost:

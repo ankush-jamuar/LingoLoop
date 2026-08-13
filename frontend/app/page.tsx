@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { LoopMap } from "@/components/learning-path/LoopMap";
@@ -22,18 +23,16 @@ import {
   LoopMap as LoopMapType,
   SkillMapNode,
 } from "@/lib/api/course";
-import { Sparkles, Trophy } from "lucide-react";
+import { Trophy } from "lucide-react";
 
 export default function HomePage() {
+  const router = useRouter();
   const [learner, setLearner] = useState<LearnerProfile | null>(null);
   const [loopMap, setLoopMap] = useState<LoopMapType | null>(null);
   const [nextLesson, setNextLesson] = useState<NextLesson | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isRetrying, setIsRetrying] = useState(false);
-
-  // Lesson Launch Toast / Notice (Phase 3 placeholder for Phase 4 lesson player)
-  const [launchedNotice, setLaunchedNotice] = useState<string | null>(null);
 
   const fetchExperience = useCallback(async () => {
     // 1. Fetch learner profile & stats
@@ -102,15 +101,16 @@ export default function HomePage() {
     skillOrNext: SkillMapNode | NextLesson,
     lessonId?: number
   ) => {
-    const title =
-      "lesson_title" in skillOrNext
-        ? `${skillOrNext.skill_title} • ${skillOrNext.lesson_title}`
-        : `${skillOrNext.title} (Lesson ${lessonId || 1})`;
+    let targetLessonId: number | undefined;
+    if ("lesson_id" in skillOrNext) {
+      targetLessonId = skillOrNext.lesson_id;
+    } else {
+      targetLessonId = lessonId || skillOrNext.lessons[0]?.id;
+    }
 
-    setLaunchedNotice(`Selected: ${title} — Lesson player ready for Phase 4!`);
-    setTimeout(() => {
-      setLaunchedNotice(null);
-    }, 4500);
+    if (targetLessonId) {
+      router.push(`/lesson/${targetLessonId}`);
+    }
   };
 
   return (
@@ -119,16 +119,6 @@ export default function HomePage() {
       <Navbar learner={learner} />
 
       <main className="flex-1 flex flex-col items-center px-4 sm:px-6">
-        {/* Phase 4 Interaction Toast Notice */}
-        {launchedNotice && (
-          <div className="fixed bottom-6 right-6 z-50 surface-card rounded-2xl p-4 bg-ink text-cream border-2 border-coral shadow-2xl flex items-center gap-3 animate-slide-up">
-            <Sparkles className="w-5 h-5 text-sun fill-sun shrink-0" />
-            <span className="text-xs sm:text-sm font-bold font-display">
-              {launchedNotice}
-            </span>
-          </div>
-        )}
-
         {/* Loading Skeleton State */}
         {isLoading && (
           <div className="w-full flex flex-col items-center">
