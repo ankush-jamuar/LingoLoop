@@ -8,6 +8,7 @@ from sqlalchemy import text
 
 from app.config import settings
 from app.database import engine
+from app.models import Base  # Discovers all registered models
 from app.routes.api import api_router
 
 logging.basicConfig(level=logging.INFO)
@@ -18,13 +19,14 @@ logger = logging.getLogger("lingoloop")
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Lifespan context manager for startup and shutdown events."""
     logger.info("Initializing LingoLoop API backend...")
-    # Verify database engine connectivity
+    # Verify database engine connectivity and create tables
     try:
         with engine.connect() as connection:
             connection.execute(text("SELECT 1"))
-        logger.info("Database connection established successfully.")
+        Base.metadata.create_all(bind=engine)
+        logger.info("Database connection established and tables verified.")
     except Exception as exc:
-        logger.error(f"Database connection error: {exc}")
+        logger.error(f"Database connection or migration error: {exc}")
         raise exc
     yield
     logger.info("Shutting down LingoLoop API backend...")
@@ -33,7 +35,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 app = FastAPI(
     title="LingoLoop API",
     description="Backend API service for LingoLoop language learning platform",
-    version="0.1.0",
+    version="0.2.0",
     lifespan=lifespan,
 )
 

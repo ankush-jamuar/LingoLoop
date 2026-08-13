@@ -1,166 +1,87 @@
-# LingoLoop — Phase 1: Project Foundation
+# LingoLoop — Language Learning Platform
 
 LingoLoop is an original full-stack language-learning web application built with Next.js (App Router, TypeScript, Tailwind CSS, Framer Motion, Lucide) and FastAPI (Python, SQLAlchemy, SQLite, Pydantic).
 
-LingoLoop introduces a cyclical cognitive cadence:
+LingoLoop structures learning around a proven cognitive loop:
 
 $$\text{Learn} \longrightarrow \text{Practice} \longrightarrow \text{Recall} \longrightarrow \text{Earn} \longrightarrow \text{Repeat}$$
 
 ---
 
-## Phase 1 Implementation Status
+## Implementation Status
 
-Phase 1 establishes the full-stack foundation, design system tokens, mascot design direction, and integration health monitoring:
+### Phase 1: Project Foundation (Completed)
+- [x] **Monorepo Architecture**: Clean separation between `frontend/` and `backend/`.
+- [x] **Design System & Tokens**: Warm palette (`INK`, `CREAM`, `CORAL`, `VIOLET`, `SUN`, `AQUA`, `MINT`) in Tailwind v4 `@theme`.
+- [x] **Typography**: Google Fonts `Plus Jakarta Sans` and `Nunito Sans` with system fallbacks.
+- [x] **Branding Assets**: `Logo.tsx` (vector loop wordmark) and `MiloMascot.tsx` (original speech-bubble companion mascot).
+- [x] **Welcome Landing Preview**: Interactive 5-step learning loop preview and live backend health connection pill.
 
-- [x] **Monorepo Architecture**: Clean separation between `frontend/` and `backend/` with unified `.gitignore` and `.env.example`.
-- [x] **Product Identity & Design System**: Custom palette tokens (`INK`, `CREAM`, `CORAL`, `VIOLET`, `SUN`, `AQUA`, `MINT`) configured idiomatically in Tailwind CSS.
-- [x] **Typography Hierarchy**: Google Fonts `Plus Jakarta Sans` (display headings) and `Nunito Sans` (interface body) with resilient system fallbacks.
-- [x] **Branding Assets**:
-  - `Logo.tsx`: Original vector ribbon/loop mark and brand wordmark.
-  - `MiloMascot.tsx`: Original speech-bubble companion character concept.
-- [x] **Welcome & Learning Loop Preview**: Tactile 5-step interactive loop showcase (`Learn` → `Practice` → `Recall` → `Earn` → `Repeat`).
-- [x] **Backend Infrastructure**: FastAPI application with CORS origin parsing, SQLite connection, SQLAlchemy 2.0 declarative `Base`, and session management (`get_db`).
-- [x] **Health Check & Frontend Integration**: `GET /api/health` endpoint returning `{"status": "ok", "service": "lingoloop-api"}` with lightweight live connection pill in the frontend.
-
-> **Scope Note**: In accordance with Phase 1 constraints, course curriculum, domain schemas, lesson player, XP/hearts/streaks gamification, profile, and user authentication are deferred to subsequent phases.
+### Phase 2: Database Architecture + Seed Data (Completed)
+- [x] **SQLAlchemy 2.x Domain Models**:
+  - `Course` → `Unit` → `Skill` → `Lesson` → `Exercise` (with explicit `order_index` and composite unique constraints).
+  - `User` and `LearnerStats` (`total_xp`, streaks, hearts, gems, daily goal).
+  - `UserSkillProgress` (tracks distinct lessons completed and crown level) and `DailyActivity` (tracks daily minutes, XP, active days).
+  - `LessonAttempt` (session-level scores, XP, hearts lost) and `ExerciseAttempt` (submission answers, correctness, attempt number).
+  - `Achievement` and `UserAchievement`.
+- [x] **Typed Exercise JSON Payloads**: Pydantic schemas validating all 5 exercise formats (`multiple_choice`, `translate`, `match_pairs`, `fill_blank`, `type_answer`).
+- [x] **Derived Leaderboard Architecture**: No redundant `Leaderboard` table; rankings are computed dynamically from `LearnerStats` and `DailyActivity`.
+- [x] **Backend Progression Rules**: Lesson completion advances skill progress on distinct lessons; completing all lessons in a skill advances `crown_level` and unlocks subsequent skills on the backend.
+- [x] **Idempotent Seed Script**: Seeds *Spanish for English Speakers* (1 Course, 3 Units, 9 Skills, 18 Lessons, 90 Exercises) and learner **Ankush** with coherent progress history via `python -m seed.seed`.
 
 ---
 
-## Repository Structure
+## Entity-Relationship (ER) Architecture
 
-```text
-lingoloop/
-│
-├── frontend/                     # Next.js App Router frontend
-│   ├── app/
-│   │   ├── layout.tsx            # Root layout with fonts & metadata
-│   │   ├── page.tsx              # Phase 1 welcome & loop preview
-│   │   └── globals.css           # Semantic tokens & tactile surface utilities
-│   ├── components/
-│   │   ├── branding/
-│   │   │   ├── Logo.tsx          # Original vector/text wordmark
-│   │   │   └── MiloMascot.tsx    # Milo speech-bubble mascot preview
-│   │   ├── layout/
-│   │   │   ├── Navbar.tsx        # Header with brand & live API status pill
-│   │   │   └── Footer.tsx        # Editorial footer
-│   │   ├── preview/
-│   │   │   └── LearningLoop.tsx  # 5-step visual loop preview
-│   │   └── ui/
-│   │       ├── Button.tsx        # Tactile buttons with micro-interactions
-│   │       └── Badge.tsx         # Semantic brand token badges
-│   ├── lib/
-│   │   ├── api/
-│   │   │   ├── client.ts         # Base fetch client with error handling
-│   │   │   └── health.ts         # GET /api/health caller
-│   │   └── utils.ts              # Classname merging utility
-│   ├── tsconfig.json
-│   └── package.json
-│
-├── backend/                      # FastAPI backend service
-│   ├── app/
-│   │   ├── main.py               # FastAPI entry point, lifespan, CORS
-│   │   ├── config.py             # Settings management with pydantic-settings
-│   │   ├── database.py           # SQLite engine, sessionmaker, and Base
-│   │   ├── models/               # SQLAlchemy declarative Base (Phase 1)
-│   │   ├── schemas/              # Pydantic schemas (HealthResponse)
-│   │   ├── routes/               # API routes (/api/health)
-│   │   └── services/             # Business logic layer foundation
-│   ├── seed/                     # Future seed data placeholder
-│   ├── requirements.txt
-│   └── README.md
-│
-├── .gitignore
-├── .env.example
-└── README.md
+```mermaid
+erDiagram
+    Course ||--o{ Unit : "has (1:N)"
+    Unit ||--o{ Skill : "has (1:N)"
+    Skill ||--o{ Lesson : "has (1:N)"
+    Lesson ||--o{ Exercise : "has (1:N)"
+    
+    User ||--|| LearnerStats : "has (1:1)"
+    User ||--o{ UserSkillProgress : "tracks (1:N)"
+    Skill ||--o{ UserSkillProgress : "tracked_in (1:N)"
+    User ||--o{ DailyActivity : "logs (1:N)"
+    User ||--o{ LessonAttempt : "performs (1:N)"
+    Lesson ||--o{ LessonAttempt : "attempted_in (1:N)"
+    LessonAttempt ||--o{ ExerciseAttempt : "contains (1:N)"
+    Exercise ||--o{ ExerciseAttempt : "evaluated_in (1:N)"
+    User ||--o{ UserAchievement : "unlocks (1:N)"
+    Achievement ||--o{ UserAchievement : "awarded_in (1:N)"
 ```
-
----
-
-## Design System Tokens
-
-| Token | Hex Value | Semantic Usage |
-|---|---|---|
-| **INK** | `#18202A` | Primary typography, deep accents, tactile borders |
-| **CREAM** | `#FFF9EF` | Canvas background, warm rounded surfaces |
-| **CORAL** | `#FF6B5F` | Primary brand accent, interactive action CTAs |
-| **VIOLET** | `#7567F8` | Learning loop accent, depth, focus highlights |
-| **SUN** | `#FFC857` | Achievement highlights, warm accents |
-| **AQUA** | `#35C7B4` | Practice & reinforcement accent |
-| **MINT** | `#DDF5E9` | Soft badge backgrounds, success highlights |
 
 ---
 
 ## Getting Started
 
-### Prerequisites
-- Node.js (v18+) & npm
-- Python (3.11+) & pip
+### 1. Backend Setup & Seeding
 
----
-
-### Backend Setup
-
-1. Navigate to the `backend/` directory:
-   ```bash
-   cd backend
-   ```
-
-2. Install Python dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. Start the FastAPI development server:
-   ```bash
-   uvicorn app.main:app --reload --port 8000
-   ```
-
-4. Verify the health check:
-   - Endpoint: `http://localhost:8000/api/health`
-   - Response: `{"status": "ok", "service": "lingoloop-api"}`
-   - Interactive Swagger Docs: `http://localhost:8000/docs`
-
----
-
-### Frontend Setup
-
-1. Navigate to the `frontend/` directory:
-   ```bash
-   cd frontend
-   ```
-
-2. Install Node dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Start the Next.js development server:
-   ```bash
-   npm run dev
-   ```
-
-4. Open `http://localhost:3000` in your browser. The navbar will automatically verify connectivity to the backend and display **API Connected**.
-
----
-
-## Environment Variables
-
-Copy `.env.example` to `.env` or configure separately:
-
-```env
-# Frontend
-NEXT_PUBLIC_API_URL=http://localhost:8000
-
-# Backend
-DATABASE_URL=sqlite:///./lingoloop.db
-CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+```bash
+cd backend
+pip install -r requirements.txt
+python -m seed.seed
+uvicorn app.main:app --reload --port 8000
 ```
+
+Verify backend health: `http://localhost:8000/api/health`
+Interactive API Docs: `http://localhost:8000/docs`
+
+### 2. Frontend Setup
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open in browser: `http://localhost:3000`
 
 ---
 
 ## Roadmap
 
-- **Phase 2**: Domain Schema, Seeded Course Curriculum, & Database Migrations.
-- **Phase 3**: Core Lesson Player, Interactive Exercises, & Audio Integration.
-- **Phase 4**: Gamification Engine (XP, Hearts, Streaks, Daily Goals, & Leaderboards).
-- **Phase 5**: User Authentication, Profile, & Compounding Mastery Metrics.
+- **Phase 3**: Core Learning Path (Loop Map), Lesson Player, Exercise Components, & Audio Integration.
+- **Phase 4**: Gamification Engine (XP/Momentum, Hearts, Streaks, Daily Goals, & Dynamic Leaderboard).
+- **Phase 5**: User Profile, Learning Statistics, & Compounding Mastery Review.
