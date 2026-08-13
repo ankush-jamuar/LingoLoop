@@ -18,6 +18,25 @@ class LearnerService:
     DEFAULT_SEED_EMAIL = "ankush@lingoloop.local"
 
     @classmethod
+    def get_user_by_email_or_default(
+        cls, db: Session, email: Optional[str] = None
+    ) -> User:
+        """Resolves target learner user."""
+        target_email = email or cls.DEFAULT_SEED_EMAIL
+        stmt = (
+            select(User)
+            .options(joinedload(User.stats))
+            .where(User.email == target_email)
+        )
+        user = db.scalars(stmt).first()
+        if not user:
+            stmt_fallback = select(User).options(joinedload(User.stats)).limit(1)
+            user = db.scalars(stmt_fallback).first()
+        if not user:
+            raise ValueError("No learner found in database.")
+        return user
+
+    @classmethod
     def get_current_learner(
         cls, db: Session, email: Optional[str] = None
     ) -> Optional[LearnerProfileResponse]:

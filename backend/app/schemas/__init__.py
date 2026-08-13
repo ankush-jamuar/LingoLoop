@@ -32,6 +32,16 @@ from app.schemas.lesson_session import (
     LessonAbandonResponse,
 )
 
+from app.schemas.gamification import (
+    HeartStatusResponse,
+    RefillHeartsResponse,
+    BuyStreakFreezeResponse,
+    LeaderboardEntry,
+    LeaderboardResponse,
+    AchievementItem,
+    AchievementsResponse,
+)
+
 __all__ = [
     "HealthResponse",
     "ExerciseType",
@@ -61,4 +71,11 @@ __all__ = [
     "ExerciseValidationResponse",
     "LessonCompletionResponse",
     "LessonAbandonResponse",
+    "HeartStatusResponse",
+    "RefillHeartsResponse",
+    "BuyStreakFreezeResponse",
+    "LeaderboardEntry",
+    "LeaderboardResponse",
+    "AchievementItem",
+    "AchievementsResponse",
 ]

@@ -501,6 +501,15 @@ class LessonService:
                     is_streak_extended = True
                 elif days_diff == 0:
                     is_streak_extended = False
+                elif days_diff == 2:
+                    # Missed yesterday: check for available streak freeze (Phase 5)
+                    if getattr(learner_stats, "streak_freeze_count", 0) > 0:
+                        learner_stats.streak_freeze_count -= 1
+                        learner_stats.current_streak += 1
+                        is_streak_extended = True
+                    else:
+                        learner_stats.current_streak = 1
+                        is_streak_extended = True
                 else:
                     learner_stats.current_streak = 1
                     is_streak_extended = True
@@ -523,6 +532,11 @@ class LessonService:
         learner_stats.longest_streak = max(learner_stats.longest_streak, learner_stats.current_streak)
         learner_stats.total_xp += total_xp_awarded
         learner_stats.last_activity_at = now_utc
+
+        # Practice for Heart Recovery (Phase 5 rule: successful replay with score >= 80 recovers +1 heart)
+        if is_replay and score >= 80 and learner_stats.hearts < learner_stats.max_hearts:
+            learner_stats.hearts = min(learner_stats.max_hearts, learner_stats.hearts + 1)
+            learner_stats.hearts_updated_at = now_utc
 
         # 6. Skill Progression & Unlocking (Safeguard 4)
         skill_completed = False
@@ -648,6 +662,14 @@ class LessonService:
 
         db.commit()
         db.refresh(learner_stats)
+
+        # 8. Evaluate Achievement Milestones (Phase 5)
+        try:
+            from app.services.gamification_service import GamificationService
+            GamificationService.evaluate_achievements(db, user_id=user_id)
+            db.refresh(learner_stats)
+        except Exception:
+            pass
 
         return LessonCompletionResponse(
             attempt_id=attempt.id,

@@ -67,6 +67,7 @@ class LearnerStats(Base):
     hearts = Column(Integer, nullable=False, default=5)
     max_hearts = Column(Integer, nullable=False, default=5)
     gems = Column(Integer, nullable=False, default=0)
+    streak_freeze_count = Column(Integer, nullable=False, default=0)
     daily_goal_xp = Column(Integer, nullable=False, default=30)
     last_activity_at = Column(DateTime(timezone=True), nullable=True)
     hearts_updated_at = Column(

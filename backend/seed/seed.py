@@ -1562,28 +1562,67 @@ def seed_achievements(db: Session) -> dict[str, Achievement]:
             "title": "First Loop",
             "description": "Close your first learning loop by completing a lesson.",
             "icon_key": "sparkles",
-            "requirement_type": "lessons",
+            "requirement_type": "lessons_completed",
             "requirement_value": 1,
+            "reward_gems": 10,
         },
         {
             "key": "momentum_100",
             "title": "Momentum Builder",
             "description": "Earn your first 100 Momentum points.",
             "icon_key": "flame",
-            "requirement_type": "xp",
+            "requirement_type": "total_xp",
             "requirement_value": 100,
+            "reward_gems": 20,
         },
         {
-            "key": "three_day_loop",
-            "title": "Three-Day Loop",
+            "key": "streak_3",
+            "title": "Loop Habit",
             "description": "Practice for three consecutive days to build habit momentum.",
             "icon_key": "calendar",
             "requirement_type": "streak",
             "requirement_value": 3,
+            "reward_gems": 15,
+        },
+        {
+            "key": "streak_7",
+            "title": "Unstoppable Momentum",
+            "description": "Reach a 7-day active learning loop streak.",
+            "icon_key": "zap",
+            "requirement_type": "streak",
+            "requirement_value": 7,
+            "reward_gems": 30,
+        },
+        {
+            "key": "perfect_loop",
+            "title": "Flawless Loop",
+            "description": "Complete a full lesson without losing a single heart.",
+            "icon_key": "shield",
+            "requirement_type": "perfect_loop",
+            "requirement_value": 1,
+            "reward_gems": 15,
+        },
+        {
+            "key": "island_hopper",
+            "title": "Island Hopper",
+            "description": "Achieve full mastery on two distinct Loop Islands.",
+            "icon_key": "crown",
+            "requirement_type": "island_hopper",
+            "requirement_value": 2,
+            "reward_gems": 25,
         },
     ]
 
     achievement_map = {}
+    valid_keys = {ach_data["key"] for ach_data in achievements_data}
+
+    # Delete obsolete achievements if any exist from older seed versions
+    obsolete_achievements = db.query(Achievement).filter(~Achievement.key.in_(valid_keys)).all()
+    for obs in obsolete_achievements:
+        db.query(UserAchievement).filter(UserAchievement.achievement_id == obs.id).delete(synchronize_session=False)
+        db.delete(obs)
+    db.flush()
+
     for ach_data in achievements_data:
         ach = db.query(Achievement).filter(Achievement.key == ach_data["key"]).first()
         if not ach:
@@ -1594,6 +1633,7 @@ def seed_achievements(db: Session) -> dict[str, Achievement]:
                 icon_key=ach_data["icon_key"],
                 requirement_type=ach_data["requirement_type"],
                 requirement_value=ach_data["requirement_value"],
+                reward_gems=ach_data.get("reward_gems", 10),
             )
             db.add(ach)
             db.flush()
@@ -1603,6 +1643,7 @@ def seed_achievements(db: Session) -> dict[str, Achievement]:
             ach.icon_key = ach_data["icon_key"]
             ach.requirement_type = ach_data["requirement_type"]
             ach.requirement_value = ach_data["requirement_value"]
+            ach.reward_gems = ach_data.get("reward_gems", 10)
             db.flush()
         achievement_map[ach.key] = ach
 
@@ -1650,8 +1691,10 @@ def seed_learner(db: Session, course: Course, achievement_map: dict[str, Achieve
         stats.hearts = 4
         stats.max_hearts = 5
         stats.gems = 80
+        stats.streak_freeze_count = 0
         stats.daily_goal_xp = 30
         stats.last_activity_at = now_utc
+        stats.hearts_updated_at = now_utc
 
     # 2. Skill Progress across all 9 skills in the course
     # Collect skills in order
@@ -1825,6 +1868,74 @@ def seed_learner(db: Session, course: Course, achievement_map: dict[str, Achieve
     return user
 
 
+def seed_cohort_learners(db: Session) -> None:
+    """Seeds 9 simulated peer learners for the Silver Loop League leaderboard."""
+    now_utc = datetime.now(timezone.utc)
+    today = date.today()
+    monday = today - timedelta(days=today.weekday())
+
+    peers = [
+        {"name": "Sofia Ramirez", "email": "sofia@lingoloop.local", "avatar": "avatar_cat", "weekly_xp": 180, "streak": 6},
+        {"name": "Marco Silva", "email": "marco@lingoloop.local", "avatar": "avatar_fox", "weekly_xp": 160, "streak": 5},
+        {"name": "Elena Rostova", "email": "elena@lingoloop.local", "avatar": "avatar_owl", "weekly_xp": 140, "streak": 4},
+        {"name": "David Kim", "email": "david@lingoloop.local", "avatar": "avatar_bear", "weekly_xp": 110, "streak": 3},
+        {"name": "Amara Okafor", "email": "amara@lingoloop.local", "avatar": "avatar_panda", "weekly_xp": 90, "streak": 3},
+        {"name": "Lucas Garcia", "email": "lucas@lingoloop.local", "avatar": "avatar_lion", "weekly_xp": 70, "streak": 2},
+        {"name": "Chloe Dupont", "email": "chloe@lingoloop.local", "avatar": "avatar_rabbit", "weekly_xp": 40, "streak": 2},
+        {"name": "Liam O'Connor", "email": "liam@lingoloop.local", "avatar": "avatar_koala", "weekly_xp": 20, "streak": 1},
+        {"name": "Yuki Tanaka", "email": "yuki@lingoloop.local", "avatar": "avatar_penguin", "weekly_xp": 10, "streak": 1},
+    ]
+
+    for p in peers:
+        user = db.query(User).filter(User.email == p["email"]).first()
+        if not user:
+            user = User(
+                name=p["name"],
+                email=p["email"],
+                avatar_key=p["avatar"],
+                created_at=now_utc - timedelta(days=14),
+            )
+            db.add(user)
+            db.flush()
+
+        stats = db.query(LearnerStats).filter(LearnerStats.user_id == user.id).first()
+        if not stats:
+            stats = LearnerStats(
+                user_id=user.id,
+                total_xp=p["weekly_xp"] + 200,
+                current_streak=p["streak"],
+                longest_streak=p["streak"] + 2,
+                hearts=5,
+                max_hearts=5,
+                gems=150,
+                daily_goal_xp=30,
+                last_activity_at=now_utc,
+                hearts_updated_at=now_utc,
+            )
+            db.add(stats)
+        else:
+            stats.current_streak = p["streak"]
+
+        # Seed active week DailyActivity for the peer
+        act = (
+            db.query(DailyActivity)
+            .filter(DailyActivity.user_id == user.id, DailyActivity.activity_date == monday)
+            .first()
+        )
+        if not act:
+            act = DailyActivity(
+                user_id=user.id,
+                activity_date=monday,
+                xp_earned=p["weekly_xp"],
+                lessons_completed=max(1, p["weekly_xp"] // 20),
+                minutes_practiced=15,
+                active=True,
+            )
+            db.add(act)
+        else:
+            act.xp_earned = p["weekly_xp"]
+
+
 def run_seed() -> dict[str, int]:
     """Initializes tables and seeds all data idempotently, returning summary counts."""
     # Ensure tables exist
@@ -1835,6 +1946,7 @@ def run_seed() -> dict[str, int]:
         course = seed_curriculum(db)
         ach_map = seed_achievements(db)
         seed_learner(db, course, ach_map)
+        seed_cohort_learners(db)
         db.commit()
 
         # Gather summary counts for validation

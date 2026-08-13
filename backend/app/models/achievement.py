@@ -23,6 +23,7 @@ class Achievement(Base):
     icon_key = Column(String(50), nullable=False, default="trophy")
     requirement_type = Column(String(50), nullable=False)
     requirement_value = Column(Integer, nullable=False, default=1)
+    reward_gems = Column(Integer, nullable=False, default=10)
 
     # Relationships
     user_achievements = relationship(

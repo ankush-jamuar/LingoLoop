@@ -116,7 +116,7 @@ export default function HomePage() {
   return (
     <div className="flex min-h-screen flex-col bg-cream selection:bg-mint selection:text-ink font-body">
       {/* Top Bar with Live Stats */}
-      <Navbar learner={learner} />
+      <Navbar learner={learner} onStatsUpdated={handleRetry} />
 
       <main className="flex-1 flex flex-col items-center px-4 sm:px-6">
         {/* Loading Skeleton State */}
