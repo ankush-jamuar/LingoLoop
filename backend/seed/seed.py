@@ -1768,50 +1768,58 @@ def seed_learner(db: Session, course: Course, achievement_map: dict[str, Achieve
                 )
                 db.add(ua)
 
-    # 5. Lesson & Exercise Attempts (For First Words lessons)
-    first_skill = all_skills[0] if all_skills else None
-    if first_skill and first_skill.lessons:
-        for l_idx, lesson in enumerate(first_skill.lessons):
-            attempt = (
-                db.query(LessonAttempt)
-                .filter(LessonAttempt.user_id == user.id, LessonAttempt.lesson_id == lesson.id)
-                .first()
-            )
-            if not attempt:
-                attempt = LessonAttempt(
-                    user_id=user.id,
-                    lesson_id=lesson.id,
-                    status="completed",
-                    score=100,
-                    xp_earned=20,
-                    hearts_lost=0,
-                    started_at=now_utc - timedelta(days=2 - l_idx, minutes=15),
-                    completed_at=now_utc - timedelta(days=2 - l_idx),
-                )
-                db.add(attempt)
-                db.flush()
+    # 5. Lesson & Exercise Attempts
+    # Seed completed attempts matching Ankush's progress:
+    # First Words: Lesson 1 & 2 completed
+    # Meet & Greet: Lesson 1 completed
+    completed_seed_lessons = []
+    if len(all_skills) >= 2:
+        if all_skills[0].lessons:
+            completed_seed_lessons.extend(all_skills[0].lessons)  # Both lessons in First Words
+        if all_skills[1].lessons:
+            completed_seed_lessons.append(all_skills[1].lessons[0])  # Lesson 1 in Meet & Greet
 
-                # Seed sample exercise attempts for this lesson attempt
-                for ex in lesson.exercises:
-                    ex_attempt = (
-                        db.query(ExerciseAttempt)
-                        .filter(
-                            ExerciseAttempt.lesson_attempt_id == attempt.id,
-                            ExerciseAttempt.exercise_id == ex.id,
-                        )
-                        .first()
+    for l_idx, lesson in enumerate(completed_seed_lessons):
+        attempt = (
+            db.query(LessonAttempt)
+            .filter(LessonAttempt.user_id == user.id, LessonAttempt.lesson_id == lesson.id)
+            .first()
+        )
+        if not attempt:
+            attempt = LessonAttempt(
+                user_id=user.id,
+                lesson_id=lesson.id,
+                status="completed",
+                score=100,
+                xp_earned=20,
+                hearts_lost=0,
+                started_at=now_utc - timedelta(days=2 - min(l_idx, 2), minutes=15),
+                completed_at=now_utc - timedelta(days=2 - min(l_idx, 2)),
+            )
+            db.add(attempt)
+            db.flush()
+
+            # Seed sample exercise attempts for this lesson attempt
+            for ex in lesson.exercises:
+                ex_attempt = (
+                    db.query(ExerciseAttempt)
+                    .filter(
+                        ExerciseAttempt.lesson_attempt_id == attempt.id,
+                        ExerciseAttempt.exercise_id == ex.id,
                     )
-                    if not ex_attempt:
-                        ex_attempt = ExerciseAttempt(
-                            lesson_attempt_id=attempt.id,
-                            exercise_id=ex.id,
-                            answer={"selected": "correct"},
-                            is_correct=True,
-                            attempt_number=1,
-                            xp_earned=2,
-                            created_at=attempt.completed_at or now_utc,
-                        )
-                        db.add(ex_attempt)
+                    .first()
+                )
+                if not ex_attempt:
+                    ex_attempt = ExerciseAttempt(
+                        lesson_attempt_id=attempt.id,
+                        exercise_id=ex.id,
+                        answer={"selected": "correct"},
+                        is_correct=True,
+                        attempt_number=1,
+                        xp_earned=2,
+                        created_at=attempt.completed_at or now_utc,
+                    )
+                    db.add(ex_attempt)
 
     db.flush()
     return user

@@ -10,6 +10,16 @@ from app.schemas.exercise_content import (
     TypeAnswerContent,
     validate_exercise_content,
 )
+from app.schemas.learner import LearnerStatsResponse, LearnerProfileResponse
+from app.schemas.progression import NextLessonResponse
+from app.schemas.course import (
+    CourseSummaryResponse,
+    LessonSummary,
+    SkillMapNode,
+    UnitMapSection,
+    LoopMapResponse,
+    SkillDetailResponse,
+)
 
 __all__ = [
     "HealthResponse",
@@ -22,4 +32,13 @@ __all__ = [
     "FillBlankContent",
     "TypeAnswerContent",
     "validate_exercise_content",
+    "LearnerStatsResponse",
+    "LearnerProfileResponse",
+    "NextLessonResponse",
+    "CourseSummaryResponse",
+    "LessonSummary",
+    "SkillMapNode",
+    "UnitMapSection",
+    "LoopMapResponse",
+    "SkillDetailResponse",
 ]
