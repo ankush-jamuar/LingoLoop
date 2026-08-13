@@ -1,0 +1,1 @@
+"""LingoLoop backend application package."""

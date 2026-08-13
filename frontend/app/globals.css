@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #18202A;
+  --color-ink-muted: #4F5E71;
+  --color-ink-subtle: #8A9BA8;
+  --color-ink-border: #E6DCce;
+
+  --color-cream: #FFF9EF;
+  --color-cream-surface: #FFFFFF;
+  --color-cream-muted: #F7EFE2;
+  --color-cream-tint: #FAF3E6;
+
+  --color-coral: #FF6B5F;
+  --color-coral-hover: #F2564A;
+  --color-coral-subtle: #FFEBE9;
+
+  --color-violet: #7567F8;
+  --color-violet-hover: #6051EB;
+  --color-violet-subtle: #EFEBFE;
+
+  --color-sun: #FFC857;
+  --color-sun-hover: #F5BC44;
+  --color-sun-subtle: #FFF8E6;
+
+  --color-aqua: #35C7B4;
+  --color-aqua-hover: #29B3A1;
+  --color-aqua-subtle: #E8F9F7;
+
+  --color-mint: #DDF5E9;
+  --color-mint-dark: #227B53;
+
+  --font-display: var(--font-plus-jakarta), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-body: var(--font-nunito-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  --radius-subtle: 8px;
+  --radius-card: 16px;
+  --radius-large: 24px;
+}
+
+:root {
+  --background: #FFF9EF;
+  --foreground: #18202A;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+
+/* Typography Utility Defaults */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+/* Subtle tactile card shadow token */
+.surface-card {
+  background-color: #FFFFFF;
+  border: 1.5px solid #EAE0D3;
+  box-shadow: 0 4px 0 0 #E3D7C7, 0 8px 24px -4px rgba(24, 32, 42, 0.05);
+}
+
+.surface-interactive {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.surface-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 0 #D8CBB9, 0 12px 28px -4px rgba(24, 32, 42, 0.08);
+}
+
+.surface-interactive:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 0 #D8CBB9, 0 4px 12px -2px rgba(24, 32, 42, 0.06);
+}
