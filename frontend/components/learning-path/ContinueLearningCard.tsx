@@ -64,12 +64,12 @@ export function ContinueLearningCard({
           </div>
 
           {/* Right Action CTA */}
-          <div className="w-full sm:w-auto self-stretch sm:self-center flex sm:flex-col justify-end">
+          <div className="w-full sm:w-auto self-stretch sm:self-center flex justify-end">
             <Button
               variant="coral"
               size="lg"
               onClick={() => onStartLesson(nextLesson)}
-              className="w-full sm:w-auto shadow-[0_4px_0_0_#18202A]"
+              className="w-full sm:w-auto shadow-[0_4px_0_0_#18202A] cursor-pointer"
             >
               <span>Continue learning</span>
               <ArrowRight className="w-4 h-4 ml-1.5" />

@@ -29,30 +29,35 @@ $$\text{Learn} \longrightarrow \text{Practice} \longrightarrow \text{Recall} \lo
 - [x] **Connected Loop Map Experience**: Thematic unit blocks containing 9 tactile Loop Island skill nodes connected via a continuous ribbon track.
 - [x] **Progress State Mapping**: Visually displays Completed (👑 Crown 1 + check), In Progress (active glowing pulse + `1/2` lesson counter), Unlocked, and Locked nodes.
 - [x] **Interactive Skill Detail Drawer**: Shows skill metadata, lesson breakdown with completion checkmarks, XP rewards, and primary CTA.
-- [x] **Robust State Handling**: Shimmer loading skeletons, friendly Milo error screen with retry button, and empty state fallbacks.
+
+### Phase 4: Lesson Engine (Completed)
+- [x] **Session State Management**: Persistent `LessonAttempt` sessions with client token validation, active attempt resumption, and forfeiture handling.
+- [x] **All 5 Interactive Exercise Types**: `multiple_choice`, `translate` (interactive word tile bank), `match_pairs` (tactile bidirectional connection), `fill_blank`, `type_answer` (forgiving unicode/punctuation normalization).
+- [x] **Authoritative Server-Side Validation**: Immediate feedback on answer submission with real-time heart loss (`max(0, hearts - 1)`).
+- [x] **Deterministic Progression & Rewards**: First-time completions award `Lesson.xp_reward` + 5 XP accuracy bonus (only if hearts_lost == 0); replays award 5 practice XP. Completing Meet & Greet unlocks Tiny Conversations.
+
+### Phase 5: Gamification Engine & Economy (Completed)
+- [x] **Sparks Shop**: Interactive modal drawer to purchase Heart refills (50 Sparks $\rightarrow$ 5/5 Hearts) and Streak Freeze shields (100 Sparks $\rightarrow$ protects 1 missed calendar day).
+- [x] **Time-Based Heart Regeneration**: 1 heart per 4 elapsed hours with exact remainder time preservation.
+- [x] **Practice-for-Hearts**: Replaying mastered lessons with $\ge 80\%$ score recovers +1 Heart for free.
+- [x] **Milestone Achievements Engine**: 6 milestone achievements with automatic evaluation upon lesson completion and instant Spark rewards.
+- [x] **Momentum League (Leaderboard)**: Silver Loop League tier with Top 3 Podium celebration, Ranks 1–4 promotion zone, and cohort isolation from 9 simulated peers based on weekly `DailyActivity` XP.
 
 ---
 
-## Entity-Relationship (ER) Architecture
+## Development Progress Reset (Development-Only)
 
-```mermaid
-erDiagram
-    Course ||--o{ Unit : "has (1:N)"
-    Unit ||--o{ Skill : "has (1:N)"
-    Skill ||--o{ Lesson : "has (1:N)"
-    Lesson ||--o{ Exercise : "has (1:N)"
-    
-    User ||--|| LearnerStats : "has (1:1)"
-    User ||--o{ UserSkillProgress : "tracks (1:N)"
-    Skill ||--o{ UserSkillProgress : "tracked_in (1:N)"
-    User ||--o{ DailyActivity : "logs (1:N)"
-    User ||--o{ LessonAttempt : "performs (1:N)"
-    Lesson ||--o{ LessonAttempt : "attempted_in (1:N)"
-    LessonAttempt ||--o{ ExerciseAttempt : "contains (1:N)"
-    Exercise ||--o{ ExerciseAttempt : "evaluated_in (1:N)"
-    User ||--o{ UserAchievement : "unlocks (1:N)"
-    Achievement ||--o{ UserAchievement : "awarded_in (1:N)"
+During testing and evaluation, reset learner state back to the exact pristine seeded baseline:
+
+```bash
+# Via CLI command
+python -m app.dev.reset
+
+# Via REST API
+curl -X POST http://localhost:8000/api/dev/reset-progress
 ```
+
+**Guard**: Guarded by `ENABLE_DEV_RESET=true` in `backend/app/config.py`.
 
 ---
 
@@ -67,7 +72,7 @@ python -m seed.seed
 uvicorn app.main:app --reload --port 8000
 ```
 
-Verify backend health: `http://localhost:8000/api/health`
+Verify backend health: `http://localhost:8000/api/health`  
 Interactive API Docs: `http://localhost:8000/docs`
 
 ### 2. Frontend Setup
@@ -79,11 +84,3 @@ npm run dev
 ```
 
 Open in browser: `http://localhost:3000`
-
----
-
-## Roadmap
-
-- **Phase 4**: Lesson Player & Multi-format Exercise Interactive Engine.
-- **Phase 5**: Gamification Engine (Hearts regen, dynamic leaderboard, streak freezing, and XP rewards).
-- **Phase 6**: User Profile, Learning Statistics, & Compounding Mastery Review.

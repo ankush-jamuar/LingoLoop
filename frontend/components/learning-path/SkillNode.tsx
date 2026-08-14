@@ -19,10 +19,12 @@ import {
 } from "lucide-react";
 import { SkillMapNode } from "@/lib/api/course";
 import { cn } from "@/lib/utils";
+import { MiloMascot } from "@/components/branding/MiloMascot";
 
 interface SkillNodeProps {
   skill: SkillMapNode;
   horizontalOffset?: "left" | "center" | "right";
+  isCurrentLoop?: boolean;
   onClick: (skill: SkillMapNode) => void;
 }
 
@@ -41,6 +43,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
 export function SkillNode({
   skill,
   horizontalOffset = "center",
+  isCurrentLoop = false,
   onClick,
 }: SkillNodeProps) {
   const Icon = ICON_MAP[skill.icon_key] || Sparkles;
@@ -56,6 +59,11 @@ export function SkillNode({
     right: "sm:translate-x-12",
   };
 
+  const bubbleText =
+    skill.lessons_completed === 0
+      ? "Start your loop here!"
+      : "Ready for the next loop?";
+
   return (
     <div
       className={cn(
@@ -63,9 +71,54 @@ export function SkillNode({
         offsetStyles[horizontalOffset]
       )}
     >
-      {/* Active Loop Pulse Ring for In-Progress Skill */}
-      {isInProgress && (
+      {/* Active Loop Pulse Ring for Current Active Skill */}
+      {(isInProgress || isCurrentLoop) && (
         <span className="absolute -inset-2.5 rounded-full bg-coral/25 animate-ping pointer-events-none" />
+      )}
+
+      {/* Milo Mascot Visual Companion Next to Current Active Learning Node (Desktop) */}
+      {isCurrentLoop && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.85, y: -4 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className={cn(
+            "absolute top-1/2 -translate-y-1/2 z-30 pointer-events-none hidden md:flex items-center gap-3",
+            horizontalOffset === "right"
+              ? "right-[calc(100%+16px)] flex-row-reverse"
+              : "left-[calc(100%+16px)] flex-row"
+          )}
+        >
+          <MiloMascot
+            size="xs"
+            mood={isInProgress ? "curious" : "cheerful"}
+            className="shrink-0"
+          />
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.15 }}
+            className="surface-card bg-white px-3.5 py-2 rounded-2xl border-2 border-ink shadow-[0_3px_0_0_#18202A] whitespace-nowrap text-left"
+          >
+            <p className="text-xs font-black font-display text-ink leading-tight">
+              {bubbleText}
+            </p>
+            <p className="text-[10px] font-bold text-coral font-display mt-0.5">
+              {skill.title} • {skill.lessons_completed}/{skill.total_lessons}
+            </p>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {/* Milo Mini Badge for Current Active Skill (Mobile) */}
+      {isCurrentLoop && (
+        <div className="flex md:hidden absolute -top-8 left-1/2 -translate-x-1/2 z-30 pointer-events-none items-center gap-1.5 bg-white px-2.5 py-0.5 rounded-full border-2 border-ink shadow-xs whitespace-nowrap">
+          <MiloMascot size="xs" mood="cheerful" className="!w-4 !h-4 shrink-0" />
+          <span className="text-[10px] font-black font-display text-coral uppercase tracking-wider">
+            Current Loop
+          </span>
+        </div>
       )}
 
       {/* Main Node Button */}

@@ -2,8 +2,9 @@
 
 import React, { useEffect } from "react";
 import { motion } from "framer-motion";
-import { CheckCircle2, XCircle, ArrowRight, Zap, RefreshCw } from "lucide-react";
+import { Zap, ArrowRight, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { MiloMascot } from "@/components/branding/MiloMascot";
 import { cn } from "@/lib/utils";
 
 interface LessonFeedbackPanelProps {
@@ -61,13 +62,16 @@ export function LessonFeedbackPanel({
               animate={{ opacity: 1, x: 0 }}
               className="flex items-center gap-3"
             >
-              <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-mint-dark text-white shadow-xs shrink-0">
-                <CheckCircle2 className="h-6 w-6 stroke-[2.5]" />
-              </div>
+              <MiloMascot size="xs" mood="celebrating" />
               <div className="space-y-0.5">
-                <h4 className="text-base sm:text-lg font-extrabold font-display text-mint-dark tracking-tight leading-none">
-                  LOOP CLOSED!
-                </h4>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-base sm:text-lg font-extrabold font-display text-mint-dark tracking-tight leading-none">
+                    LOOP CLOSED!
+                  </h4>
+                  <span className="hidden sm:inline-block text-[11px] font-bold text-mint-dark bg-white px-2 py-0.5 rounded-full border border-mint-dark/30">
+                    Nice work!
+                  </span>
+                </div>
                 <div className="flex items-center gap-1 text-xs font-bold font-display text-violet">
                   <Zap className="w-3.5 h-3.5 fill-violet" />
                   <span>+{xpEarned} Momentum XP</span>
@@ -82,9 +86,7 @@ export function LessonFeedbackPanel({
               animate={{ opacity: 1, x: 0 }}
               className="flex items-center gap-3"
             >
-              <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-coral text-white shadow-xs shrink-0">
-                <XCircle className="h-6 w-6 stroke-[2.5]" />
-              </div>
+              <MiloMascot size="xs" mood="encouraging" />
               <div className="space-y-0.5 max-w-md">
                 <div className="flex items-center gap-2">
                   <h4 className="text-base sm:text-lg font-extrabold font-display text-coral tracking-tight leading-none">

@@ -71,7 +71,7 @@ export function Navbar({ learner, onStatsUpdated }: NavbarProps) {
   }, []);
 
   const navLinks = [
-    { href: "/", label: "Loop Map", icon: Map },
+    { href: "/learn", label: "Loop Map", icon: Map },
     { href: "/leaderboard", label: "League", icon: Trophy },
     { href: "/achievements", label: "Milestones", icon: Award },
   ];

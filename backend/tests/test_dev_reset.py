@@ -18,6 +18,7 @@ from app.models import (
 from app.schemas.lesson_session import SubmitAnswerRequest
 from app.services.dev_service import DevService
 from app.services.gamification_service import GamificationService
+from app.services.learner_service import LearnerService
 from app.services.lesson_service import LessonService
 from seed.seed import run_seed
 
@@ -97,31 +98,31 @@ def test_dev_reset_full_suite():
         db.refresh(stats)
 
         # -------------------------------------------------------------
-        # STEP 3: Verify Exact Baseline Restoration
+        # STEP 3: Verify Fresh Baseline Restoration
         # -------------------------------------------------------------
-        print("\n--- Verifying Restored State ---")
-        print(f"Restored XP            : {stats.total_xp} (Expected: 120)")
-        print(f"Restored Hearts        : {stats.hearts} (Expected: 4)")
+        print("\n--- Verifying Fresh Restored State ---")
+        print(f"Restored XP            : {stats.total_xp} (Expected: 0)")
+        print(f"Restored Hearts        : {stats.hearts} (Expected: 5)")
         print(f"Restored Max Hearts    : {stats.max_hearts} (Expected: 5)")
-        print(f"Restored Sparks        : {stats.gems} (Expected: 80)")
-        print(f"Restored Streak        : {stats.current_streak} (Expected: 3)")
+        print(f"Restored Sparks        : {stats.gems} (Expected: 0)")
+        print(f"Restored Streak        : {stats.current_streak} (Expected: 0)")
         print(f"Restored Freezes       : {stats.streak_freeze_count} (Expected: 0)")
 
-        assert stats.total_xp == 120
-        assert stats.hearts == 4
+        assert stats.total_xp == 0
+        assert stats.hearts == 5
         assert stats.max_hearts == 5
-        assert stats.gems == 80
-        assert stats.current_streak == 3
+        assert stats.gems == 0
+        assert stats.current_streak == 0
         assert stats.streak_freeze_count == 0
 
-        # Verify Lesson Attempts restored to exact 3 seeded attempts
+        # Verify Lesson Attempts cleared (fresh state)
         attempts_restored = (
             db.query(LessonAttempt).filter(LessonAttempt.user_id == user.id).count()
         )
-        print(f"Restored Attempts Count: {attempts_restored} (Expected: 3)")
-        assert attempts_restored == 3
+        print(f"Restored Attempts Count: {attempts_restored} (Expected: 0)")
+        assert attempts_restored == 0
 
-        # Verify User Skill Progress
+        # Verify User Skill Progress: First Words unlocked, remaining 8 locked
         skills_prog = (
             db.query(UserSkillProgress)
             .filter(UserSkillProgress.user_id == user.id)
@@ -130,30 +131,35 @@ def test_dev_reset_full_suite():
         assert len(skills_prog) == 9
         # First Words (skill 1)
         fw = [p for p in skills_prog if p.skill_id == 1][0]
-        assert fw.status == "completed"
-        assert fw.completed is True
-        assert fw.lessons_completed == 2
+        assert fw.status == "unlocked"
+        assert fw.is_unlocked is True
+        assert fw.completed is False
+        assert fw.lessons_completed == 0
+        assert fw.xp_earned == 0
         # Meet & Greet (skill 2)
         mg = [p for p in skills_prog if p.skill_id == 2][0]
-        assert mg.status == "in_progress"
+        assert mg.status == "locked"
+        assert mg.is_unlocked is False
         assert mg.completed is False
-        assert mg.lessons_completed == 1
-        # Tiny Conversations (skill 3)
-        tc = [p for p in skills_prog if p.skill_id == 3][0]
-        assert tc.status == "unlocked"
-        assert tc.completed is False
-        assert tc.lessons_completed == 0
+        assert mg.lessons_completed == 0
 
-        print("Verified: UserSkillProgress accurately restored to baseline.")
+        # Verify get_next_lesson returns Lesson 1 of First Words
+        next_lesson = LearnerService.get_next_lesson(db, user.id)
+        assert next_lesson is not None
+        assert next_lesson.lesson_id == 1
+        assert next_lesson.lesson_title == "Lesson 1: Hello & Goodbye"
+        print(f"Next recommended lesson : {next_lesson.skill_title} -> {next_lesson.lesson_title} (ID: {next_lesson.lesson_id})")
 
-        # Verify User Achievements (only 2 baseline achievements)
+        print("Verified: UserSkillProgress accurately set to fresh unstarted baseline.")
+
+        # Verify User Achievements (empty on fresh reset)
         user_ach_count = (
             db.query(UserAchievement)
             .filter(UserAchievement.user_id == user.id)
             .count()
         )
-        print(f"Restored Achievements  : {user_ach_count} (Expected: 2)")
-        assert user_ach_count == 2
+        print(f"Restored Achievements  : {user_ach_count} (Expected: 0)")
+        assert user_ach_count == 0
 
         # Verify Static Seed Data Preserved
         assert db.query(Course).count() == 1

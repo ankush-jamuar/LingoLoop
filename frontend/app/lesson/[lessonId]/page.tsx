@@ -25,6 +25,7 @@ import { FillBlankExercise } from "@/components/lesson/exercises/FillBlankExerci
 import { TypeAnswerExercise } from "@/components/lesson/exercises/TypeAnswerExercise";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { SkeletonItem } from "@/components/ui/SkeletonLoader";
+import { Sparkles } from "lucide-react";
 
 export default function LessonPlayerPage() {
   const params = useParams();
@@ -268,11 +269,11 @@ export default function LessonPlayerPage() {
         // Ignore abandon error on navigation
       }
     }
-    router.push("/");
+    router.push("/learn");
   };
 
   const handleReturnHome = () => {
-    router.push("/");
+    router.push("/learn");
   };
 
   // Loading Skeleton State
@@ -357,7 +358,13 @@ export default function LessonPlayerPage() {
       {/* Main Exercise Viewport */}
       <main className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 py-6 pb-28 sm:pb-32 w-full">
         {currentExercise && (
-          <div className="w-full flex justify-center animate-fade-in">
+          <div className="w-full flex flex-col items-center justify-center animate-fade-in">
+            {lessonId === 1 && currentExerciseIndex === 0 && (
+              <div className="mb-4 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sun-subtle border-2 border-sun/60 text-ink text-xs font-extrabold font-display shadow-2xs">
+                <Sparkles className="w-3.5 h-3.5 text-sun fill-sun" />
+                <span>First Loop: Select an answer and check to close your first loop!</span>
+              </div>
+            )}
             {currentExercise.type === "multiple_choice" && (
               <MultipleChoiceExercise
                 exercise={currentExercise}

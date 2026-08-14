@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import Any, Dict
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
@@ -9,18 +10,24 @@ from app.models import (
     ExerciseAttempt,
     LearnerStats,
     LessonAttempt,
+    Skill,
+    Unit,
     User,
     UserAchievement,
     UserSkillProgress,
 )
-from seed.seed import seed_achievements, seed_cohort_learners, seed_learner
+from app.models.progress import SkillStatus
+from seed.seed import seed_cohort_learners
 
 
 class DevService:
     @classmethod
     def reset_progress(cls, db: Session) -> Dict[str, Any]:
         """
-        Resets learner progress and economy state back to the exact seeded baseline.
+        Resets learner progress and economy state back to a genuinely fresh learner baseline.
+        - XP: 0, Streak: 0, Hearts: 5/5, Sparks: 0, Freezes: 0
+        - Attempts: 0, Activities: 0, User Achievements: 0
+        - Skills: First Words unlocked (0/2 lessons), all other 8 skills locked.
         Development-only: strictly blocked if ENABLE_DEV_RESET is false or environment is not development.
         Atomic and transactional.
         """
@@ -31,15 +38,19 @@ class DevService:
             )
 
         email = "ankush@lingoloop.local"
+        now_utc = datetime.now(timezone.utc)
         user = db.query(User).filter(User.email == email).first()
         if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Learner not found.",
+            user = User(
+                name="Ankush",
+                email=email,
+                avatar_key="milo_default",
+                created_at=now_utc,
             )
+            db.add(user)
+            db.flush()
 
-        # 1. Clean learner attempts and progress (atomic)
-        # Find attempt IDs to clean exercise attempts
+        # 1. Clean all learner attempts, activities, and achievements (atomic)
         attempt_ids = [
             att.id
             for att in db.query(LessonAttempt).filter(LessonAttempt.user_id == user.id).all()
@@ -64,7 +75,36 @@ class DevService:
 
         db.flush()
 
-        # 2. Retrieve active course and achievement catalog
+        # 2. Reset LearnerStats to fresh baseline (0 XP, 5/5 Hearts, 0 Streak, 0 Sparks, 0 Freezes)
+        stats = db.query(LearnerStats).filter(LearnerStats.user_id == user.id).first()
+        if not stats:
+            stats = LearnerStats(
+                user_id=user.id,
+                total_xp=0,
+                current_streak=0,
+                longest_streak=0,
+                hearts=5,
+                max_hearts=5,
+                gems=0,
+                streak_freeze_count=0,
+                daily_goal_xp=30,
+                last_activity_at=None,
+                hearts_updated_at=now_utc,
+            )
+            db.add(stats)
+        else:
+            stats.total_xp = 0
+            stats.current_streak = 0
+            stats.longest_streak = 0
+            stats.hearts = 5
+            stats.max_hearts = 5
+            stats.gems = 0
+            stats.streak_freeze_count = 0
+            stats.daily_goal_xp = 30
+            stats.last_activity_at = None
+            stats.hearts_updated_at = now_utc
+
+        # 3. Retrieve active course and set fresh skill progress
         course = db.query(Course).filter(Course.is_active == True).first()
         if not course:
             raise HTTPException(
@@ -72,33 +112,53 @@ class DevService:
                 detail="Active curriculum course missing in database.",
             )
 
-        achievement_map = seed_achievements(db)
+        all_skills = (
+            db.query(Skill)
+            .join(Unit)
+            .filter(Unit.course_id == course.id)
+            .order_by(Unit.order_index, Skill.order_index)
+            .all()
+        )
 
-        # 3. Restore exact baseline using single source of truth
-        seed_learner(db, course, achievement_map)
+        for idx, sk in enumerate(all_skills):
+            # First skill (First Words) is unlocked; all other skills are locked
+            if idx == 0:
+                p_status = SkillStatus.UNLOCKED.value
+                p_unlocked = True
+            else:
+                p_status = SkillStatus.LOCKED.value
+                p_unlocked = False
+
+            progress = UserSkillProgress(
+                user_id=user.id,
+                skill_id=sk.id,
+                status=p_status,
+                is_unlocked=p_unlocked,
+                completed=False,
+                crown_level=0,
+                xp_earned=0,
+                lessons_completed=0,
+                last_practiced_at=None,
+            )
+            db.add(progress)
+
+        # 4. Refresh cohort learners for leaderboard baseline
         seed_cohort_learners(db)
 
         db.commit()
 
-        # 4. Refresh stats for summary
-        stats = db.query(LearnerStats).filter(LearnerStats.user_id == user.id).first()
-        user_skills = (
-            db.query(UserSkillProgress).filter(UserSkillProgress.user_id == user.id).all()
-        )
-        unlocked_skills = [s for s in user_skills if s.is_unlocked]
-
         return {
             "success": True,
-            "message": "Learner progress successfully reset to pristine seeded baseline.",
+            "message": "Learner progress successfully reset to fresh, unstarted baseline.",
             "learner": {
                 "name": user.name,
                 "email": user.email,
-                "total_xp": stats.total_xp if stats else 120,
-                "hearts": stats.hearts if stats else 4,
-                "max_hearts": stats.max_hearts if stats else 5,
-                "gems": stats.gems if stats else 80,
-                "streak": stats.current_streak if stats else 3,
-                "streak_freezes": stats.streak_freeze_count if stats else 0,
-                "skills_unlocked": len(unlocked_skills),
+                "total_xp": 0,
+                "hearts": 5,
+                "max_hearts": 5,
+                "gems": 0,
+                "streak": 0,
+                "streak_freezes": 0,
+                "skills_unlocked": 1,
             },
         }

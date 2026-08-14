@@ -8,10 +8,15 @@ import { BookOpen } from "lucide-react";
 
 interface UnitSectionProps {
   unit: UnitMapSection;
+  activeSkillId?: number;
   onSkillClick: (skill: SkillMapNode) => void;
 }
 
-export function UnitSection({ unit, onSkillClick }: UnitSectionProps) {
+export function UnitSection({
+  unit,
+  activeSkillId,
+  onSkillClick,
+}: UnitSectionProps) {
   // Compute horizontal alternating pattern for nodes
   const getOffset = (idx: number): "left" | "center" | "right" => {
     const pattern: Array<"center" | "right" | "center" | "left"> = [
@@ -60,12 +65,14 @@ export function UnitSection({ unit, onSkillClick }: UnitSectionProps) {
       <div className="flex flex-col items-center py-4">
         {unit.skills.map((skill, idx) => {
           const isCompleted = skill.status === "completed" || skill.completed;
+          const isCurrentLoop = skill.id === activeSkillId;
           return (
             <React.Fragment key={skill.id}>
               {/* Skill Node */}
               <SkillNode
                 skill={skill}
                 horizontalOffset={getOffset(idx)}
+                isCurrentLoop={isCurrentLoop}
                 onClick={onSkillClick}
               />
 

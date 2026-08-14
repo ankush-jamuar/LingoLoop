@@ -30,8 +30,8 @@
   --color-mint: #DDF5E9;
   --color-mint-dark: #227B53;
 
-  --font-display: var(--font-plus-jakarta), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-body: var(--font-nunito-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Plus Jakarta Sans", var(--font-plus-jakarta, system-ui), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-body: "Nunito Sans", var(--font-nunito-sans, system-ui), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
   --radius-subtle: 8px;
   --radius-card: 16px;
