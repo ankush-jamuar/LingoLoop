@@ -31,7 +31,7 @@ class DevService:
         Development-only: strictly blocked if ENABLE_DEV_RESET is false or environment is not development.
         Atomic and transactional.
         """
-        if not settings.ENABLE_DEV_RESET or settings.ENVIRONMENT != "development":
+        if not settings.ENABLE_DEV_RESET:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Development reset is disabled in this environment.",

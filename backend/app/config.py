@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     DATABASE_URL: str = "sqlite:///./lingoloop.db"
     CORS_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000"
-    ENABLE_DEV_RESET: bool = True
+    ENABLE_DEV_RESET: bool = False
 
     model_config = SettingsConfigDict(
         env_file=".env",
