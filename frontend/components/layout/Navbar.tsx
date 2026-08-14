@@ -15,6 +15,7 @@ import {
   Trophy,
   Award,
   Sparkles,
+  Settings as SettingsIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -74,6 +75,8 @@ export function Navbar({ learner, onStatsUpdated }: NavbarProps) {
     { href: "/learn", label: "Loop Map", icon: Map },
     { href: "/leaderboard", label: "League", icon: Trophy },
     { href: "/achievements", label: "Milestones", icon: Award },
+    { href: "/profile", label: "Profile", icon: UserIcon },
+    { href: "/settings", label: "Settings", icon: SettingsIcon },
   ];
 
   return (
@@ -199,25 +202,29 @@ export function Navbar({ learner, onStatsUpdated }: NavbarProps) {
 
             {/* Learner Identity Pill */}
             {learner ? (
-              <div
-                title={`Logged in as ${learner.name} (${learner.email})`}
-                className="inline-flex items-center gap-2 rounded-full border border-ink/15 bg-white px-2.5 sm:px-3 py-1 text-xs font-bold font-display text-ink shadow-2xs cursor-default"
+              <Link
+                href="/profile"
+                title={`View profile for ${learner.name} (${learner.email})`}
+                className="inline-flex items-center gap-2 rounded-full border border-ink/15 bg-white px-2.5 sm:px-3 py-1 text-xs font-bold font-display text-ink shadow-2xs hover:bg-cream-muted transition-colors cursor-pointer"
               >
                 <div className="flex items-center justify-center w-5 h-5 rounded-full bg-mint text-mint-dark font-extrabold text-[10px]">
                   {learner.name.charAt(0)}
                 </div>
                 <span className="hidden sm:inline">{learner.name}</span>
-              </div>
+              </Link>
             ) : (
-              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-cream-muted border border-ink/10 text-ink-muted">
+              <Link
+                href="/profile"
+                className="flex items-center justify-center w-8 h-8 rounded-full bg-cream-muted border border-ink/10 text-ink-muted hover:bg-cream"
+              >
                 <UserIcon className="w-4 h-4" />
-              </div>
+              </Link>
             )}
           </div>
         </div>
 
         {/* Mobile Navigation Bar */}
-        <div className="flex lg:hidden items-center justify-around px-2 py-1.5 border-t border-ink/10 bg-cream-muted/50">
+        <div className="flex lg:hidden items-center justify-around px-1 py-1 border-t border-ink/10 bg-cream-muted/50 overflow-x-auto">
           {navLinks.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
@@ -226,13 +233,13 @@ export function Navbar({ learner, onStatsUpdated }: NavbarProps) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-1.5 px-3 py-1 rounded-lg font-display text-xs font-bold transition-all",
+                  "flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-lg font-display text-[11px] sm:text-xs font-bold transition-all whitespace-nowrap",
                   isActive
                     ? "bg-white text-ink shadow-xs border border-ink/15"
                     : "text-ink-muted hover:text-ink"
                 )}
               >
-                <Icon className="w-3.5 h-3.5" />
+                <Icon className="w-3.5 h-3.5 shrink-0" />
                 <span>{item.label}</span>
               </Link>
             );
