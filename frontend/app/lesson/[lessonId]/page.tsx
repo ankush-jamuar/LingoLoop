@@ -15,6 +15,7 @@ import {
 } from "@/lib/api/lesson";
 import { LessonHeader } from "@/components/lesson/LessonHeader";
 import { LessonFeedbackPanel } from "@/components/lesson/LessonFeedbackPanel";
+import { MiloFeedbackModal } from "@/components/common/MiloFeedbackModal";
 import { ExitConfirmationModal } from "@/components/lesson/ExitConfirmationModal";
 import { LessonCompleteScreen } from "@/components/lesson/LessonCompleteScreen";
 import { LessonFailedScreen } from "@/components/lesson/LessonFailedScreen";
@@ -323,7 +324,7 @@ export default function LessonPlayerPage() {
     );
   }
 
-  // Completed State
+  // Completed State (Full Celebration Screen)
   if (completionResult) {
     return (
       <div className="min-h-screen bg-cream flex flex-col justify-between">
@@ -415,14 +416,23 @@ export default function LessonPlayerPage() {
         )}
       </main>
 
-      {/* Tactile Feedback & Action Panel */}
+      {/* Bottom Sticky Action Bar */}
       <LessonFeedbackPanel
         status={feedbackStatus}
         canSubmit={canSubmit}
-        xpEarned={validationResult?.xp_earned ?? currentExercise?.xp_reward ?? 2}
-        correctAnswerDisplay={validationResult?.correct_answer_display}
         onSubmit={handleSubmitAnswer}
-        onContinue={handleContinue}
+      />
+
+      {/* Centered Duolingo-Style Milo Feedback Modal */}
+      <MiloFeedbackModal
+        isOpen={feedbackStatus === "correct" || feedbackStatus === "wrong"}
+        type={feedbackStatus === "correct" ? "success" : "error"}
+        xpGained={validationResult?.xp_earned ?? currentExercise?.xp_reward ?? 2}
+        correctAnswer={validationResult?.correct_answer_display}
+        heartsRemaining={session?.hearts_remaining ?? 5}
+        maxHearts={session?.max_hearts ?? 5}
+        onPrimaryAction={handleContinue}
+        primaryActionLabel={feedbackStatus === "correct" ? "Continue" : "Try again"}
       />
 
       {/* Exit Confirmation Dialog */}

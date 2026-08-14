@@ -87,6 +87,7 @@ LingoLoop/
 │   │   ├── layout/             # Navbar & Footer with Dev Reset
 │   │   ├── learning-path/      # LoopMap, UnitSection, SkillNode, RibbonPath
 │   │   ├── lesson/             # Header, Feedback, Complete/Failed Screens
+
 │   │   └── ui/                 # Button, Badge, Modal, StatsPill
 │   └── lib/api/                # Strongly-typed API client fetchers
 └── backend/

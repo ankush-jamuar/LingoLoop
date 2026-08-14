@@ -83,28 +83,28 @@ export function SkillNode({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
           className={cn(
-            "absolute top-1/2 -translate-y-1/2 z-30 pointer-events-none hidden md:flex items-center gap-3",
+            "absolute top-1/2 -translate-y-1/2 z-30 pointer-events-none hidden md:flex items-center gap-3.5",
             horizontalOffset === "right"
               ? "right-[calc(100%+16px)] flex-row-reverse"
               : "left-[calc(100%+16px)] flex-row"
           )}
         >
           <MiloMascot
-            size="xs"
+            size="sm"
             mood={isInProgress ? "curious" : "cheerful"}
-            className="shrink-0"
+            className="shrink-0 drop-shadow-md"
           />
 
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.15 }}
-            className="surface-card bg-white px-3.5 py-2 rounded-2xl border-2 border-ink shadow-[0_3px_0_0_#18202A] whitespace-nowrap text-left"
+            className="surface-card bg-white px-4 py-2.5 rounded-2xl border-2 border-ink shadow-[0_4px_0_0_#18202A] whitespace-nowrap text-left"
           >
             <p className="text-xs font-black font-display text-ink leading-tight">
               {bubbleText}
             </p>
-            <p className="text-[10px] font-bold text-coral font-display mt-0.5">
+            <p className="text-[11px] font-bold text-coral font-display mt-0.5">
               {skill.title} • {skill.lessons_completed}/{skill.total_lessons}
             </p>
           </motion.div>
@@ -113,10 +113,10 @@ export function SkillNode({
 
       {/* Milo Mini Badge for Current Active Skill (Mobile) */}
       {isCurrentLoop && (
-        <div className="flex md:hidden absolute -top-8 left-1/2 -translate-x-1/2 z-30 pointer-events-none items-center gap-1.5 bg-white px-2.5 py-0.5 rounded-full border-2 border-ink shadow-xs whitespace-nowrap">
-          <MiloMascot size="xs" mood="cheerful" className="!w-4 !h-4 shrink-0" />
+        <div className="flex md:hidden absolute -top-10 left-1/2 -translate-x-1/2 z-30 pointer-events-none items-center gap-2 bg-white px-3 py-1 rounded-full border-2 border-ink shadow-xs whitespace-nowrap">
+          <MiloMascot size="xs" mood="cheerful" className="!w-5 !h-5 shrink-0" />
           <span className="text-[10px] font-black font-display text-coral uppercase tracking-wider">
-            Current Loop
+            {bubbleText}
           </span>
         </div>
       )}
